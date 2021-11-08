@@ -816,7 +816,7 @@ class DesktopState extends MusicBeatState
 					doStuff = true;
 				
 				if (doStuff) {
-					if (FlxG.mouse.wheel > 0 && notepadOffsets[1].y < 70) { //&& notepadOffsets[notepadTextArray.length - 1].y < statsScrollMax) {
+					if (FlxG.mouse.wheel > 0 && notepadOffsets[1].y < 70) { 
 						for (i in 0...notepadTextArray.length) {
 							notepadOffsets[i + 1].y += FlxG.mouse.wheel * 30;
 							notepadTextArray[i].setPosition(notepadDrag.x + notepadOffsets[i + 1].x, notepadDrag.y + notepadOffsets[i + 1].y);
@@ -829,7 +829,7 @@ class DesktopState extends MusicBeatState
 						}
 					}
 					
-					if (FlxG.mouse.wheel < 0 && notepadOffsets[1].y > statsScrollMax) { //&& notepadOffsets[notepadTextArray.length - 1].y < statsScrollMax) {
+					if (FlxG.mouse.wheel < 0 && notepadOffsets[1].y > statsScrollMax) { 
 						for (i in 0...notepadTextArray.length) {
 							notepadOffsets[i + 1].y += FlxG.mouse.wheel * 30;
 							notepadTextArray[i].setPosition(notepadDrag.x + notepadOffsets[i + 1].x, notepadDrag.y + notepadOffsets[i + 1].y);
@@ -842,14 +842,6 @@ class DesktopState extends MusicBeatState
 						}
 						trace(notepadOffsets[1].y);
 					}
-						/*notepadOffsets[1].y += FlxG.mouse.wheel * 24;
-						notepad.members[1].setPosition(notepadDrag.x + notepadOffsets[1].x, notepadDrag.y + notepadOffsets[1].y);*/
-
-					/*}
-					if (FlxG.mouse.wheel > 0 && notepadOffsets[1].y < 70) {
-						notepadOffsets[1].y += FlxG.mouse.wheel * 24;
-						notepad.members[1].setPosition(notepadDrag.x + notepadOffsets[1].x, notepadDrag.y + notepadOffsets[1].y);
-					}*/
 				}
 			}
 
@@ -993,8 +985,15 @@ class DesktopState extends MusicBeatState
 				}
 					
 		}
+
+		if (FlxG.keys.justPressed.EIGHT) {
+			FlxG.switchState(new CharacterState());
+		}
+
+
 		super.update(elapsed);
 	}
+
 	public function updateBG() {
 		remove(bg);
 		bg = new FlxSprite(0, 0).loadGraphic(Paths.image('desktop/desktop1'));

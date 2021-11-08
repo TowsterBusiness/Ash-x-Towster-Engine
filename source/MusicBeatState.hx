@@ -40,10 +40,6 @@ class MusicBeatState extends FlxUIState
 			trace('reg ' + transIn.region);
 
 		super.create();
-
-		//camAchievement = new FlxCamera();
-		//camAchievement.bgColor.alpha = 0;
-		//FlxG.cameras.add(camAchievement);
 	}
 
 
@@ -92,16 +88,13 @@ class MusicBeatState extends FlxUIState
 			var leText:String = achievementArray[0];
 			achievementArray.splice(0, 1);
 			showingAchievement = true;
-			var achievementBox:FlxSprite = new FlxSprite(0, FlxG.height ).loadGraphic(Paths.image('achieve'));
-			//achievementBox.cameras = [camAchievement];
+			var achievementBox:FlxSprite = new FlxSprite(0, FlxG.height ).loadGraphic(Paths.image('achieve')); 
 			achievementBox.alpha = 0;
 			add(achievementBox);
 			achievementBox.y -= achievementBox.height;
 			var achievementName = new FlxText(113, (FlxG.height - achievementBox.height) + 14, 283, leText, 16);
 			achievementName.setFormat(Paths.font("PUSAB.otf"), 20, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE,FlxColor.BLACK);
 			achievementName.alpha = 0;
-			//achievementName.cameras = [camAchievement];
-			//achievementName.scrollFactor.set();
 			add(achievementName);
 			FlxTween.tween(achievementName, {alpha:1}, 0.2, {
 				onComplete: function(twn:FlxTween)
