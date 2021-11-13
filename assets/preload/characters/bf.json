@@ -199,23 +199,23 @@
 			"indices": []
 		}
 	],
-	"no_antialiasing": false,
+	"noAntialiasing": false,
 	"image": "characters/BOYFRIEND",
 	"position": [
 		0,
 		350
 	],
 	"healthicon": "bf",
-	"flip_x": true,
-	"healthbar_colors": [
+	"flipX": true,
+	"healthbarColors": [
 		49,
 		176,
 		209
 	],
-	"camera_position": [
+	"cameraPosition": [
 		0,
 		0
 	],
-	"sing_duration": 4,
+	"singDuration": 4,
 	"scale": 1
 }

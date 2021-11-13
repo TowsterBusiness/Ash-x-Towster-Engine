@@ -2,6 +2,7 @@ package;
 
 import Paths;
 import Character;
+import flixel.FlxObject;
 import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
 import flixel.util.FlxColor;
@@ -29,6 +30,13 @@ class CharacterState extends MusicBeatState
     var UI_Box:FlxUITabMenu;
 	var onScreenCharacter:Character;
 
+	var bgLayer:FlxTypedGroup<FlxSprite>;
+	var charLayer:FlxTypedGroup<Character>;
+
+	private var camEditor:FlxCamera;
+	private var camHUD:FlxCamera;
+	var camFollow:FlxObject;
+
 	public static var character:String;
 	var characterFile:CharacterFile;
 	
@@ -37,32 +45,115 @@ class CharacterState extends MusicBeatState
 		'gf',
 	];
 
+	var tipText:FlxText;
+	var tipTextList:Array<String> = [
+		'E/Q - Camera Zoom In/Out
+		\nArrow Keys - Move Character
+		\nIJKL - Move Camera',
+		'Haha You are on Character',
+	];
+
     override function create () {
+		camEditor = new FlxCamera();
+		camHUD = new FlxCamera();
+		camHUD.bgColor.alpha = 0;
+		//Please tell me why this would be FlxG.cameras.reset?
+		FlxG.cameras.reset(camEditor);
+		FlxG.cameras.add(camHUD);
+		FlxCamera.defaultCameras = [camEditor];
+
+		bgLayer = new FlxTypedGroup<FlxSprite>();
+		add(bgLayer);
+		charLayer = new FlxTypedGroup<Character>();
+		add(charLayer);
+
+		//Loading BG
+		var bg1:FlxSprite = new FlxSprite(-970, -580).loadGraphic(Paths.image('day/BG1', 'shared'));
+		bg1.antialiasing = true;
+		bg1.scale.set(0.8, 0.8);
+		bg1.scrollFactor.set(0.3, 0.3);
+		bg1.active = false;
+		bgLayer.add(bg1);
+
+		var bg2:FlxSprite = new FlxSprite(-1240, -650).loadGraphic(Paths.image('day/BG2', 'shared'));
+		bg2.antialiasing = true;
+		bg2.scale.set(0.5, 0.5);
+		bg2.scrollFactor.set(0.6, 0.6);
+		bg2.active = false;
+		bgLayer.add(bg2);
+
+		camFollow = new FlxObject(0, 0, 2, 2);
+		camFollow.screenCenter();
+		add(camFollow);
+		FlxG.camera.follow(camFollow);
 
         var tabs = [
 			{name: 'Character', label: 'Character'},
 			{name: 'Sprite', label: 'Sprite Offsets'}
 		];
-
 		UI_Box = new FlxUITabMenu(null, tabs, true);
 		UI_Box.resize(300, 400);
-		UI_Box.x = 700;
+		UI_Box.x = 900;
 		UI_Box.y = 20;
+		UI_Box.cameras = [camHUD];
 		add(UI_Box);
 
 		character = Paths.getPreloadPath('characters/bf.json');
-
 		characterFile = cast Json.parse(Assets.getText(character));
-
 		onScreenCharacter = new Character(characterFile.position[0], characterFile.position[1], characterFile.image, characterFile.flipX, false, true);
-		add(onScreenCharacter);
+		charLayer.add(onScreenCharacter);
 
 		addCharacterUI();
+
+		tipText = new FlxText(FlxG.width - 20, 700, 0, tipTextList[0], 12);
+		tipText.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		tipText.scrollFactor.set();
+		tipText.borderSize = 1;
+		tipText.x -= tipText.width;
+		tipText.y -= tipText.height;
+		tipText.cameras = [camHUD];
+		add(tipText);
 
 		super.create();
     }
 
     override function update (elapsed:Float) {
+		//Haha please tell me if there's a better way of doing this ;-;
+		if (FlxG.mouse.justReleased) {
+			tipText.text = tipTextList[UI_Box.selected_tab];
+		}
+
+		if (FlxG.keys.pressed.I || FlxG.keys.pressed.J || FlxG.keys.pressed.K || FlxG.keys.pressed.L || FlxG.keys.pressed.UP || FlxG.keys.pressed.LEFT || FlxG.keys.pressed.RIGHT || FlxG.keys.pressed.DOWN)
+		{
+			var change:Int = FlxG.keys.pressed.SHIFT ? 10 : 1;
+			if (FlxG.keys.pressed.I)
+				camFollow.y -= change;
+			else if (FlxG.keys.pressed.K)
+				camFollow.y += change;
+
+			if (FlxG.keys.pressed.J)
+				camFollow.x -= change;
+			else if (FlxG.keys.pressed.L)
+				camFollow.x += change;
+
+			if (FlxG.keys.justPressed.LEFT)
+				onScreenCharacter.x -= change;
+			else if (FlxG.keys.justPressed.RIGHT)
+				onScreenCharacter.x += change;
+	
+			if (FlxG.keys.justPressed.UP) 
+				onScreenCharacter.y -= change;
+			else if (FlxG.keys.justPressed.DOWN)
+				onScreenCharacter.y += change;
+		}
+
+		if (FlxG.keys.justReleased.I || FlxG.keys.justReleased.J || FlxG.keys.justReleased.K || FlxG.keys.justReleased.L || FlxG.keys.justReleased.UP || FlxG.keys.justReleased.LEFT || FlxG.keys.justReleased.RIGHT || FlxG.keys.justReleased.DOWN) 
+		{
+			characterFile.position[0] = onScreenCharacter.x;
+			characterFile.position[1] = onScreenCharacter.y;
+			characterFile.cameraPosition[0] = camFollow.x;
+			characterFile.cameraPosition[1] = camFollow.y;
+		}
 
 		super.update(elapsed);
     }
@@ -83,18 +174,10 @@ class CharacterState extends MusicBeatState
 		HealthIcon_TextBox.callback = function(text:String, input:String) {
 			characterFile.healthicon = text;
 		}
-		var HeathIcon_R = new FlxUIInputText(10, 140, '49');
-		HeathIcon_R.callback = function(text:String, input:String) {
-			characterFile.healthbarColors[0] = Std.parseInt(text);
-		}
-		var HeathIcon_B = new FlxUIInputText(10, 160, '176');
-		HeathIcon_R.callback = function(text:String, input:String) {
-			characterFile.healthbarColors[1] = Std.parseInt(text);
-		}
-		var HeathIcon_G = new FlxUIInputText(10, 180, '209');
-		HeathIcon_R.callback = function(text:String, input:String) {
-			characterFile.healthbarColors[3] = Std.parseInt(text);
-		}
+
+		var HeathIcon_R = new FlxUINumericStepper(10, 140, 1, characterFile.healthbarColors[0], 0, 255, 0);
+		var HeathIcon_G = new FlxUINumericStepper(75, 140, 1, characterFile.healthbarColors[1], 0, 255, 0);
+		var HeathIcon_B = new FlxUINumericStepper(140, 140, 1, characterFile.healthbarColors[2], 0, 255, 0);
 
 		var Path_Text = new FlxUIText(10, 200, 'Path:');
 		var Path_TextBox = new FlxUIInputText(10, 220, 'BOYFRIEND');
@@ -102,35 +185,15 @@ class CharacterState extends MusicBeatState
 			characterFile.image = 'characters/' + text;
 		}
 
-		var PositionsX_Text = new FlxUIText(10, 240, 'x: ');
-		var PositionsX_TextBox = new FlxUIInputText(10, 260, '0');
-		PositionsX_TextBox.callback = function(text:String, input:String) {
-			characterFile.position[0] = Std.parseInt(text);
-			onScreenCharacter.x = Std.parseInt(text);
-		}
-
-		var PositionsY_Text = new FlxUIText(10, 280, 'y: ');
-		var PositionsY_TextBox = new FlxUIInputText(10, 300, '0');
-		PositionsY_TextBox.callback = function(text:String, input:String) {
-			characterFile.position[1] = Std.parseInt(text);
-			onScreenCharacter.y = Std.parseInt(text);
-		}
-
 		var Update_Button = new FlxUIButton(10, 340, 'Update', function() {
 			updateSprites();
 		});
-
-		
 
 		//adding all variables into the group
 		var tab_group_character = new FlxUI(null, UI_Box);
 		tab_group_character.name = "Character";
 
 		tab_group_character.add(Update_Button);
-		tab_group_character.add(PositionsY_TextBox);
-		tab_group_character.add(PositionsY_Text);
-		tab_group_character.add(PositionsX_TextBox);
-		tab_group_character.add(PositionsX_Text);
 		tab_group_character.add(HeathIcon_G);
 		tab_group_character.add(HeathIcon_B);
 		tab_group_character.add(HeathIcon_R);

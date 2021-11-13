@@ -406,7 +406,7 @@ class Character extends FlxSprite
 				addOffset("singDOWNmiss", 14, -20);
 
 				playAnim('idle');
-			/* case 'bf':
+			case 'bf':
 				noteSkin = 'bf';
 				var tex = Paths.getSparrowAtlas('characters/BOYFRIEND', 'shared');
 				frames = tex;
@@ -447,7 +447,7 @@ class Character extends FlxSprite
 
 				playAnim('idle');
 
-				flipX = true; */
+				flipX = true;
 			case 'bf-ex':
 				iconColor = 'FF0EAEFE';
 				noteSkin = 'bf';
@@ -1107,6 +1107,7 @@ class Character extends FlxSprite
 				playAnim('idle');
 			default:
 				var path:String = Paths.getPreloadPath('characters/' + curCharacter + '.json');
+				path = Paths.getPreloadPath('characters/' + defaultCharacter + '.json');
 				if (!Assets.exists(path)) {
 					path = Paths.getPreloadPath('characters/' + defaultCharacter + '.json');
 				} else if (_isEditor) {
@@ -1114,24 +1115,38 @@ class Character extends FlxSprite
 				}
 
 				var json:CharacterFile = cast Json.parse(Assets.getText(path));
-
+				
+				flipX = !!json.flipX;
 				noteSkin = json.noteSkin;
+
 				var tex = Paths.getSparrowAtlas(json.image, 'shared');
 				frames = tex;
 
 				trace(tex.frames.length);
 
-				for (animationIndex in json.animations) {
-					animation.addByPrefix(animationIndex.anim, animationIndex.name, animationIndex.fps, animationIndex.loop);
-					addOffset(animationIndex.anim, animationIndex.offsets[0], animationIndex.offsets[1]);
+				for (anim in json.animations) {
+					trace(anim);
+					var animAnim:String = '' + anim.anim;
+					var animName:String = '' + anim.name;
+					var animFps:Int = anim.fps;
+					var animLoop:Bool = !!anim.loop; //Bruh
+					var animIndices:Array<Int> = anim.indices;
+
+					if(animIndices != null && animIndices.length > 0) {
+						animation.addByIndices(animAnim, animName, animIndices, "", animFps, animLoop);
+					} else {
+						animation.addByPrefix(animAnim, animName, animFps, animLoop);
+					}
+
+					if(anim.offsets != null && anim.offsets.length > 1) {
+						addOffset(anim.anim, anim.offsets[0], anim.offsets[1]);
+					}
 				}
 
 				playAnim('idle');
-
-				flipX = json.flipX;
 		}
 
-		dance();
+		//dance();
 
 		if (isPlayer)
 		{
